@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foundations of the Restoration - Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .unit-selector {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .unit-selector:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .unit-selector.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .flashcard-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .flashcard {
+            width: 100%;
+            min-height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            min-height: 400px;
+            backface-visibility: hidden;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            transform: rotateY(180deg);
+        }
+
+        .card-number {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .source-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .source-notion {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .source-web {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .card-content {
+            margin-top: 50px;
+        }
+
+        .question {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .answer {
+            font-size: 1.1em;
+            color: #444;
+            line-height: 1.7;
+        }
+
+        .answer ul, .answer ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .answer li {
+            margin-bottom: 8px;
+        }
+
+        .answer strong {
+            color: #1976d2;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .nav-button {
+            background: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .shuffle-button {
+            background: #ff9800;
+            color: white;
+        }
+
+        .progress {
+            text-align: center;
+            color: white;
+            font-size: 1.1em;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .hint {
+            text-align: center;
+            color: white;
+            font-size: 0.9em;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .response-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .response-btn {
+            padding: 15px 40px;
+            border-radius: 30px;
+            border: none;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-weight: 600;
+        }
+
+        .response-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .knew-it-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .missed-it-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            color: white;
+            font-size: 0.95em;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .stat-number {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .clear-missed-btn {
+            background: #ff5722;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+
+        .clear-missed-btn:hover {
+            background: #e64a19;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .card-face {
+                padding: 30px 20px;
+                min-height: 350px;
+            }
+
+            .question {
+                font-size: 1.2em;
+            }
+
+            .answer {
+                font-size: 1em;
+            }
+
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 Foundations of the Restoration</h1>
+        <p>Interactive Flashcard Study Guide</p>
+    </div>
+
+    <div class="controls">
+        <button class="unit-selector active" onclick="filterByUnit('all')">All Units</button>
+        <button class="unit-selector" onclick="filterByUnit(8)">Unit 8</button>
+        <button class="unit-selector" onclick="filterByUnit(9)">Unit 9</button>
+        <button class="unit-selector" onclick="filterByUnit(10)">Unit 10</button>
+        <button class="unit-selector" onclick="filterByUnit(11)">Unit 11</button>
+        <button class="unit-selector" onclick="filterByUnit(12)">Unit 12</button>
+        <button class="unit-selector" onclick="filterByUnit(13)">Unit 13</button>
+        <button class="unit-selector" onclick="filterByUnit(14)">Unit 14</button>
+        <button class="unit-selector" onclick="filterByUnit('skills')">Skills</button>
+        <button class="unit-selector" id="missedBtn" onclick="filterByUnit('missed')" style="background: #f44336; color: white;">📝 Review Missed (<span id="missedCount">0</span>)</button>
+        <button class="unit-selector shuffle-button" onclick="shuffleCards()">🔀 Shuffle</button>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span>✓ Knew:</span>
+            <span class="stat-number" id="knewCount">0</span>
+        </div>
+        <div class="stat-item">
+            <span>✗ Missed:</span>
+            <span class="stat-number" id="missedStatCount">0</span>
+        </div>
+        <div class="stat-item">
+            <span>📊 Progress:</span>
+            <span class="stat-number" id="reviewedCount">0</span>/<span id="totalCount">98</span>
+        </div>
+        <button class="clear-missed-btn" onclick="clearMissed()" title="Clear all missed cards">🗑️ Clear Missed</button>
+    </div>
+
+    <div class="flashcard-container">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+            <div class="card-face card-front">
+                <div class="card-number" id="cardNumber">1/98</div>
+                <div class="source-badge source-notion" id="sourceBadge">✓ Notion</div>
+                <div class="card-content">
+                    <div class="question" id="question">Loading...</div>
+                </div>
+            </div>
+            <div class="card-face card-back">
+                <div class="card-number" id="cardNumberBack">1/98</div>
+                <div class="source-badge source-notion" id="sourceBadgeBack">✓ Notion</div>
+                <div class="card-content">
+                    <div class="answer" id="answer">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="previousCard()">← Previous</button>
+        <button class="nav-button" id="nextBtn" onclick="nextCard()">Next →</button>
+    </div>
+
+    <div class="response-buttons">
+        <button class="response-btn knew-it-btn" onclick="markAsKnew()">✓ I Knew It</button>
+        <button class="response-btn missed-it-btn" onclick="markAsMissed()">✗ Missed It</button>
+    </div>
+
+    <div class="progress" id="progress">Card 1 of 98</div>
+    <div class="hint">💡 Click the card to flip and see the answer | Use ← → arrows to navigate</div>
+
+    <script>
+        const flashcards = [
+            // UNIT 8
+            {unit: 8, q: "Which Doctrine and Covenants section is the great revelation on the three degrees of heavenly glory?", a: "<strong>D&C Section 76</strong>", source: "notion"},
+            {unit: 8, q: "What is a central message of section 76?", a: "Everyone is going to heaven, not the same degree but still heaven. Resolves the dichotomy of Heaven and Hell - allows both love and justice to coexist. Shows degrees of heaven rather than the 'one-or-the-other' frame of mind.", source: "notion"},
+            {unit: 8, q: "What are the general descriptions of who enters the celestial, terrestrial, telestial degrees of heaven, and outer darkness?", a: "<strong>Celestial Kingdom:</strong> Those who kept commandments, made covenants, and just men made perfect through Jesus's atonement<br><br><strong>Terrestrial Kingdom:</strong> Those who refuse to obey the gospel covenant and choose to be deceived by craftiness, but are otherwise good and honorable<br><br><strong>Telestial Kingdom:</strong> Murderers, whoremongers, and others who commit serious sins; they will pay for their sins until the end of atonement<br><br><strong>Outer Darkness:</strong> Those who have perfect knowledge of both the Father and Son but then try to dethrone and almost recrucify Christ", source: "notion"},
+            {unit: 8, q: "Which Doctrine and Covenants section teaches that Christ continued from grace to grace until He received a fulness?", a: "<strong>D&C Section 93</strong> - Discusses the nature of Christ being both immortal and human", source: "notion"},
+            {unit: 8, q: "How do we grow from grace to grace so we can also receive a fulness?", a: "1. Understanding what and how we worship - worship Christ and grow grace for grace to become like God<br>2. Keeping His commandments → approach the Father in Christ's name → become glorified in Christ<br>3. Jesus grew grace for grace and did not receive fullness at first<br>4. We progress as Jesus did and grow to a measure of the stature of the Father", source: "notion"},
+            {unit: 8, q: "What is the eternal nature of the mind/spirit?", a: "<strong>Intelligence is eternal:</strong> D&C 93:29 - 'Intelligence, or the light of truth, was not created or made, neither indeed can be.'<br><br>Intelligence has always existed and always will. It's the real eternal part of humanity that was not created. Intelligence combined with spirit constitutes a spiritual identity.<br><br>Spirit and matter/element are both eternal. All spirit is matter, but more fine or pure (D&C 131:7-8).", source: "web"},
+            {unit: 8, q: "What theology does D&C 88 and D&C 137 teach about final judgment?", a: "We are able to judge ourselves. Christ would want us to come but we would not want to go or become. He will never force us to go to a kingdom that we are not ready for.", source: "notion"},
+            {unit: 8, q: "When was the first 'endowment' given in this dispensation?", a: "<strong>June 1831 in Ohio</strong> (Isaac Morley Schoolhouse)", source: "notion"},
+            {unit: 8, q: "What was the purpose of the original School of the Prophets?", a: "Sanctify a group of men to achieve endowment, commune with God, perform miracles, and prepare to meet Him. 'How to live a life of discipline.'", source: "notion"},
+            {unit: 8, q: "What holy practices were implemented in the School of the Prophets to help accomplish its objective?", a: "• No inappropriate laughter<br>• Don't be prideful<br>• Worship God<br>• Be holy, chaste & worthy<br>• Wash each other's feet<br>• Taught about the doctrines of the Kingdom and how to pray", source: "notion"},
+            {unit: 8, q: "What is a doctrinal definition of endowment?", a: "<strong>The knowledge, power, and capacity to overcome the world and do the work of God through Christ, enter the presence of God, and receive a fulness of His exalted blessings.</strong><br><br>'You need an endowment to be able to overcome the darkness of our day.'", source: "notion"},
+            {unit: 8, q: "What activities and experiences constituted the Kirtland 'endowment'?", a: "1. Cleaned whole body with water<br>2. Put on clean clothing<br>3. Anointed heads<br>4. Called upon God with uplifted hands<br>5. Saw the Father and Son with angels", source: "notion"},
+            
+            // UNIT 9
+            {unit: 9, q: "Why was the Word of Wisdom given in historical context?", a: "To help people achieve endowment and make people more holy, not necessarily more healthy (though health is a resultant blessing). Help members of the School of the Prophets prepare for endowment - 'How to live a life of discipline.' One of the outward indicators to show we are God's disciples.", source: "notion"},
+            {unit: 9, q: "How and when did the Word of Wisdom become a binding commandment?", a: "<strong>1920s</strong> - Brigham Young Jr. reminded President Woodruff<br><strong>1918</strong> - Only temple recommend offered (required for temple attendance)<br><br>Focus over time developed from recommendation to commandment", source: "notion"},
+            {unit: 9, q: "What does the Word of Wisdom prohibit from consuming, and what does it encourage?", a: "<strong>Prohibitions:</strong> Wine + hard liquors, tobacco, tea and coffee, illegal drugs<br><br><strong>Encouragements:</strong> Eat wholesome herbs and fruit, flesh sparingly + with thanksgiving, grain is the staff of life<br><br><em>Note: Church has not made general standards on encouragements</em>", source: "notion"},
+            {unit: 9, q: "What was the Kirtland Safety Society?", a: "The bank that was set up by the church to generate cash flow", source: "notion"},
+            {unit: 9, q: "What was the Kirtland apostasy and its main causes?", a: "<strong>What happened:</strong> 28 people excommunicated (developed new church of dissenters), 10-15% left church, including 3 witnesses of Book of Mormon, 4 quorum members, 1 First Presidency member<br><br><strong>Main cause:</strong> Money problems led to faith crisis ('if he is a prophet why would he fail'). Debate over prophet's role in church growth.", source: "notion"},
+            {unit: 9, q: "Who was sent on the mission to England to help save the church?", a: "<strong>Heber C. Kimball</strong><br>1837-1838 & 1839-1841", source: "notion"},
+            {unit: 9, q: "Where was the Church headquartered in 1838 after the Saints left Kirtland, Ohio?", a: "<strong>Missouri in Caldwell County</strong>", source: "notion"},
+            {unit: 9, q: "What were the 'Salt Sermon' and the 'July 4th Oration,' and who gave them?", a: "<strong>Salt Sermon (Sidney Rigdon):</strong> Addressed internal apostasy in Far West, Missouri. Compared dissenters to salt to be cast out and trodden upon.<br><br><strong>July 4th Oration (Sidney Rigdon):</strong> Declared a war of extermination if mobs come and seek to smite the saints.", source: "notion"},
+            {unit: 9, q: "What was the Missouri 'Mormon War' of 1838?", a: "A conflict between Latter-day Saints and their neighbors in northwestern Missouri in fall 1838. Included armed skirmishes at Gallatin and other locations, vigilante groups on both sides, and culminated in Governor Boggs issuing the Extermination Order, forcing Saints to leave Missouri.", source: "web"},
+            {unit: 9, q: "What were the 'Danites'?", a: "Danites + Gideonites: people who went to eject people from their community forcibly, using the church as pretense. Those who listened to the prophets but <strong>went beyond the mark</strong>.", source: "notion"},
+            {unit: 9, q: "What happened at Gallatin, Missouri, related to the Missouri extermination?", a: "August in Gallatin - serious fight when Latter-day Saints were denied the right to vote because of religion. At Dewitt, members were kicked out, then Saints kicked out others and participated in lawlessness. Led to many affidavits to governor about Mormon attacks.", source: "notion"},
+            {unit: 9, q: "What happened at Hawn's Mill?", a: "Massacre of <strong>19 people</strong> who were innocent. Horrible atrocities occurred there.", source: "notion"},
+            {unit: 9, q: "What is the Missouri extermination order, and who signed it?", a: "<strong>Governor Boggs</strong> signed Executive Order 44 on October 27, 1838, stating 'The Mormons must be treated as enemies and must be exterminated or driven from the state.' Not formally rescinded until 1976.", source: "notion"},
+            {unit: 9, q: "Where did the Saints flee when they were expelled from Missouri?", a: "<strong>Quincy, Illinois</strong> - The people there received them during their challenges and bad times.", source: "notion"},
+
+            // UNIT 10
+            {unit: 10, q: "Who are the THREE groups that are working together in the work for the dead?", a: "1. <strong>The Living</strong> - Those on earth performing proxy ordinances in temples<br>2. <strong>The Dead in the Spirit World</strong> - Those receiving gospel preaching and choosing to accept or reject ordinances<br>3. <strong>The Preachers in the Spirit World</strong> - Christ, prophets, apostles, and missionaries teaching the gospel to spirits", source: "web"},
+            {unit: 10, q: "What is the great 'chain' or network of the priesthood?", a: "Establishing a <strong>royal lineage</strong> through sealing. We seal children to parents for covenant lineage (not just being together). Heirship confirmed through temple. <strong>Heaven defined by families and connections, not geographical boundaries.</strong> We're linking to facilitate heirs and outreach of all God's children.", source: "notion"},
+            {unit: 10, q: "Who was called as the assistant president of the Church in Nauvoo?", a: "<strong>Hyrum Smith</strong>", source: "notion"},
+            {unit: 10, q: "Who was first baptized for the dead, and who witnessed?", a: "<strong>Jane Neyman</strong> baptized for her son Cyrus<br>Witnessed by <strong>Vienna Jacques</strong>", source: "notion"},
+            {unit: 10, q: "What is the modern offering of the sons of Levi?", a: "Latter-day Saints going to the temple offering up names of the dead and our hearts to participate in salvation and exaltation. <strong>Our offering: find and seal with every single child of God in the world.</strong> This is the gathering of Israel - accomplishing the sealing ordinance work. Eternal family ministering organization.", source: "notion"},
+            {unit: 10, q: "What is the central premise of the King Follett discourse?", a: "<strong>'You have got to learn how to be Gods yourselves'</strong><br><br>Go from degree to degree into exaltation. Learn the last principle - salvation beyond the grave. Finding out God's true character is most important. How did God become God? God intended most to come to faith through baptisms for the dead.", source: "notion"},
+            {unit: 10, q: "What were some early spiritual practices in the Relief Society?", a: "• Speaking in tongues or interpreting tongues<br>• Healing blessings<br>• Giving the temple endowment (possibly)", source: "notion"},
+            {unit: 10, q: "What is the history of women giving healing blessings of faith?", a: "Healing blessings of faith were given if the women had faith, just as the men had done", source: "notion"},
+            {unit: 10, q: "What is the 'School of the Prophetesses'?", a: "The <strong>Relief Society of Nauvoo</strong> - known as the place to prepare sisters to receive the temple endowment. Compared to the School of the Prophets.", source: "notion"},
+            {unit: 10, q: "Where was the temple endowment introduced in Nauvoo?", a: "<strong>Nauvoo Red Brick Store - Upper Room</strong>", source: "notion"},
+            {unit: 10, q: "What are the apostasy and adoption theories regarding the relationship between Freemasonry and the source of the temple endowment ceremony?", a: "<strong>Apostasy Theory:</strong> Masonry had ancient valid roots that apostatized. Joseph Smith restored true nature. Masonry taken from Priesthood and degenerated.<br><br><strong>Adoption Theory:</strong> Joseph learned concepts during prophetic ministry. When he became a Mason, he adopted them given their effectiveness.", source: "notion"},
+            {unit: 10, q: "What does the endowment ceremony symbolically represent?", a: "Symbolically enter the presence of God. <strong>Dress rehearsal for the very real thing to come.</strong> Suggests growth as we progress from room to room.", source: "notion"},
+            {unit: 10, q: "What are the five major laws we covenant to live in the endowment ceremony?", a: "1. Law of Obedience<br>2. Law of Sacrifice<br>3. The Law of the Gospel of Jesus Christ<br>4. Law of Chastity<br>5. Law of Consecration", source: "notion"},
+
+            // UNIT 11
+            {unit: 11, q: "What is the definition of the 'new and everlasting covenant of marriage'?", a: "The fullness of the gospel with all its ordinances and covenants is the New and Everlasting Covenant. Man and woman enter into eternal sealing by the power of the holy priesthood.", source: "notion"},
+            {unit: 11, q: "What are the covenants of eternal marriage?", a: "1. <strong>Cleave:</strong> Adhere firmly, closely, loyally, unwavering, totally<br>2. <strong>Co-equal:</strong> Counsel together - no president/vice president, but co-decisions in unity. Quorum of 2 apostles<br>3. <strong>Keep Gospel Covenants:</strong> Safeguard, protect, hold sacred, prioritize, cause to live on", source: "notion"},
+            {unit: 11, q: "What ordinances are required for exaltation and to become like God?", a: "The <strong>Sealing ordinance</strong> of marrying people by the holy spirit of Promise", source: "notion"},
+            {unit: 11, q: "What is meant by 'eternal increase'?", a: "When we enter eternal marriage, this increase is the <strong>children we can have in that covenant after the resurrection</strong>", source: "notion"},
+            {unit: 11, q: "What is meant by 'the more sure word of prophecy' or 'calling and election sure'?", a: "Having one's calling and election sealed by the Holy Spirit of Promise. A personal assurance of inheriting eternal life. Receiving the testimony of Jesus through the Holy Ghost. Related to the Second Anointing ordinance. Promise of eternal life, barring the unpardonable sin.", source: "web"},
+            {unit: 11, q: "What are 3 types of marriage described in D&C 132 and their heavenly results?", a: "1. <strong>V.15:</strong> Non-eternal marriage not bound eternally but of the world (become angels in heaven which minister)<br>2. Marriage done in His order and Priesthood<br>3. Faithful eternal marriage", source: "notion"},
+            {unit: 11, q: "What are the Church's teachings related to those people who don't have the opportunity to marry in this life?", a: "<strong>All who make and keep covenants with God in this life will receive all eternal blessings of eternal marriage and exaltation in His way and His time.</strong>", source: "notion"},
+            {unit: 11, q: "What is the Church's doctrine on Mother in Heaven?", a: "Family Proclamation: we can become like our Father and Mother. They are married for eternity to fulfill divine potential and goodness.", source: "notion"},
+            {unit: 11, q: "What ordinance does Joseph Smith introduce to confirm calling and election?", a: "<strong>The Second Anointing</strong> (also called 'the fulness of the priesthood' or 'having one's calling and election made sure'). An ordinance where a man and woman are anointed and sealed to eternal life. Performed in the temple. Promises exaltation barring the unpardonable sin.", source: "web"},
+            {unit: 11, q: "What is the historical context of Doctrine and Covenants 132 (who was it given to and why)?", a: "Given to <strong>Emma Smith</strong> - a way of seeking revelation on the subject to guide her", source: "notion"},
+            {unit: 11, q: "What is the basic summary of Joseph Smith's practice of plural marriage?", a: "Married potentially <strong>30 but 10 for sure</strong>. Began likely in Kirtland, mostly in Nauvoo. Married women of every age: 58 and as young as 14. <strong>Angel with drawn sword</strong> from 1853 told him to do it or lose his calling. He did not want to do this.", source: "notion"},
+            {unit: 11, q: "According to Doctrine and Covenants 132, what are three reasons why the Church practiced plural marriage during the 19th century?", a: "1. <strong>The Lord commanded it</strong> - He is directing His work<br>2. <strong>Appointment to restore all things</strong> (possibly done in Old Testament)<br>3. <strong>To raise up seed unto God</strong> - guiding people to God rather than just numbers", source: "notion"},
+            {unit: 11, q: "What are some of the theological concepts associated with plural marriage, including dynastic sealings?", a: "<strong>Dynastic Sealings:</strong> Develop network of sealing and kinsmen to 'endure into eternities.' Be 'crafty' to seal all on earth - everyone sealed to each other, anyone to anyone.<br><br><strong>Second Anointing:</strong> Sacred sealing in heaven. First seal begins connection; second seal unites for eternity. 'Eternal opportunity not eternal guarantee.'", source: "notion"},
+            {unit: 11, q: "What is the Church's standing law of marriage?", a: "<strong>Monogamy is God's standard</strong> unless He declares otherwise in history. Obedience, Sacrifice, Consecration help us come closer to God. Plural marriage is <strong>not requisite for exaltation</strong> now.", source: "notion"},
+
+            // UNIT 12
+            {unit: 12, q: "Why was Joseph Smith killed? (five factors from John Taylor's 1854 talk)", a: "1. Polygamy<br>2. Politics<br>3. Internal apostasy<br>4. Religious bias (not popular)<br>5. Wicked violent men", source: "notion"},
+            {unit: 12, q: "Who was John C. Bennett and what role did he play in the martyrdom?", a: "Counselor in First Presidency and Mayor of Nauvoo. Caught in adultery ('spiritual wifery'), claimed Joseph endorsed it. <strong>Expelled summer 1842.</strong> Became vocal opponent, published exposés, contributed to public sentiment against Joseph Smith.", source: "web"},
+            {unit: 12, q: "Who were the Laws, the Fosters, and the Higbees, and how were they connected to the martyrdom?", a: "Developed newspaper combating Joseph Smith, claiming he was leading church astray. Did so from their reformed church (offshoot). Published the <strong>Nauvoo Expositor</strong>.", source: "notion"},
+            {unit: 12, q: "What was the 'Voice of Innocence' document?", a: "Document from <strong>Emma Smith</strong> about women signing their opposition to polygamy and any immorality with women in the church.", source: "notion"},
+            {unit: 12, q: "What was the Nauvoo Expositor?", a: "Newspaper to oppose the church, developed by the Laws, Fosters, and Higbees - an offshoot of the church", source: "notion"},
+            {unit: 12, q: "Who was Thomas Ford, and what was his role related to the martyrdom?", a: "<strong>Governor of Illinois.</strong> Promised Joseph protection if he came to Carthage. Left Carthage the day before mob attacked jail - his absence removed main deterrent to mob. Later expressed regret but claimed couldn't have prevented it.", source: "web"},
+            {unit: 12, q: "On what legal charges was Joseph Smith incarcerated in Carthage Jail?", a: "<strong>Riot</strong> - for ordering destruction of Nauvoo Expositor press<br><strong>Treason</strong> - added later, made him ineligible for bail<br><br>Destruction of Expositor deemed violation of freedom of press. Charges brought by political enemies.", source: "web"},
+            {unit: 12, q: "What was the succession debate of 1844, and who were the two key players?", a: "Debate arose from death of Joseph and Hyrum Smith. <strong>Primary: Brigham Young and Sidney Rigdon.</strong> Others: Joseph Smith III, William Smith, President Marks. Competition for leading the church. Mostly well-meaning, sincere believers in restoration.", source: "notion"},
+            {unit: 12, q: "What was Brigham Young's key theological claims to authority?", a: "<strong>Keys of the kingdom</strong> designated to Quorum of the 12. Brigham was president of quorum. They performed temple ordinances, received and gave all ordinances. Used scriptures and Holy Ghost to make it plain and clear to those willing.", source: "notion"},
+            {unit: 12, q: "What is the Church's process of prophetic succession today?", a: "When President dies, <strong>Quorum of 12 becomes presiding body.</strong> President of quorum becomes church president unanimously from the 12. <strong>Apostle who served longest becomes president.</strong> 2nd longest serving becomes president of Quorum of 12.", source: "notion"},
+            {unit: 12, q: "What is the RLDS Church/Community of Christ and their origins?", a: "People who left 'mountain saints,' felt they were rightful heirs. Stayed mid-west. Led by Jason Briggs and Zenis Gurley. <strong>Joseph Smith III</strong> believed to be rightful prophet. Similar mission, good-natured. Emma was faithful to testimony but felt organization had left her.", source: "notion"},
+            {unit: 12, q: "Who oversaw the completion of the Nauvoo temple and administering of the endowments therein?", a: "<strong>Joseph Smith and Brigham Young</strong> focused most on the temple and administration of ordinances therein", source: "notion"},
+            {unit: 12, q: "What was the Council of Fifty?", a: "Look for new places for church to organize and find settlement opportunities. <strong>Theodemocratic government.</strong>", source: "notion"},
+            {unit: 12, q: "Where did the Church look to settle when fleeing Nauvoo, including which other country?", a: "Brigham Young '**the great colonizer**' led church west to <strong>Utah</strong>. Also considered <strong>Northern Mexico</strong>.", source: "notion"},
+
+            // UNIT 13
+            {unit: 13, q: "When and where did the Church begin to do vicarious endowments?", a: "Began in Nauvoo Temple before exodus (1845-1846). More formally/extensively in Utah temples, particularly <strong>St. George Temple (1877)</strong> - first completed Utah temple where full vicarious ordinances could be performed.", source: "notion"},
+            {unit: 13, q: "Second only to Brigham Young, who was the person largely in charge of making temple worship central to the Saints?", a: "<strong>Wilford Woodruff</strong> - First temple President of the St. George Temple", source: "notion"},
+            {unit: 13, q: "In conjunction with sealings, what is the law of adoption and how and when did it end?", a: "<strong>What:</strong> People sealed to others (not biological family), redefining relationships as son/daughter or Father/Mother. Led to kingdoms of people sealed together.<br><br><strong>When ended:</strong> Wilford Woodruff received revelation <strong>April 8, 1894</strong>", source: "notion"},
+            {unit: 13, q: "What is the name of the federal law that disenfranchised the Church and seized its assets?", a: "<strong>Edmunds-Tucker Act</strong>", source: "notion"},
+            {unit: 13, q: "What was the Great Indignation meeting?", a: "<strong>Largest female protest in US: 6,000 people. In favor of polygamy.</strong> Refuting idea that women don't have liberty.", source: "notion"},
+            {unit: 13, q: "When was Official Declaration 1 released, and who issued it?", a: "<strong>Wilford Woodruff in 1890</strong>", source: "notion"},
+            {unit: 13, q: "Did plural marriage end abruptly or slowly after O.D. #1?", a: "<strong>Slowly.</strong> Many accepted joyfully, others begrudgingly. In Canada and Mexico it continued for a time.", source: "notion"},
+            {unit: 13, q: "What was the Second Manifesto, and Final Manifesto?", a: "<strong>Second Manifesto (Joseph F. Smith):</strong> No more future plural marriages; leads to excommunication if performed.<br><br><strong>Final Manifesto:</strong> Denounced fundamentalist polygamists.", source: "notion"},
+            {unit: 13, q: "What is the Church's doctrine regarding race?", a: "<strong>All people are equal unto God.</strong> Divine sons and daughters to be loved. 'He esteemeth all men the same.'", source: "notion"},
+            {unit: 13, q: "What were the names of some of the Black men who were ordained to the priesthood during Joseph Smith's time?", a: "• <strong>Elijah Abel</strong><br>• <strong>Q. Walker Lewis</strong>", source: "notion"},
+            {unit: 13, q: "When and by whom did the priesthood and temple restrictions for Black Africans begin?", a: "<strong>Brigham Young in 1852</strong> (though many kept joining the church regardless)", source: "notion"},
+            {unit: 13, q: "What are three events that potentially contributed to the restriction on members of Black African descent and the priesthood?", a: "1. Apostasy of Black convert <strong>William McCary</strong><br>2. Interracial marriage of Walker Lewis's son (negative personal reaction)<br>3. Passing of slavery legislation in Utah Territory (Governor Brigham Young; Orson Pratt opposed)", source: "notion"},
+            {unit: 13, q: "What were the sources of some of the justifications, explanations, and confusion over the restriction?", a: "Misinterpretation of scripture (curse of Cain/Ham), cultural racism of 19th century, speculation presented as doctrine (pre-mortal life theories), folk doctrine taught as official, lack of clarity if commandment or policy. <strong>Church has since disavowed these theories.</strong>", source: "web"},
+            {unit: 13, q: "What is Official Declaration 2, and who received the revelation on that subject?", a: "Announced <strong>June 8, 1978</strong>. Received by <strong>President Spencer W. Kimball</strong>. Extended priesthood and temple blessings to all worthy male members regardless of race/lineage. After extended prayer. Unanimously approved by Twelve and General Authorities.", source: "web"},
+            {unit: 13, q: "What are the Church's official teachings today regarding why members of Black African descent were denied priesthood offices and temple ordinances?", a: "<strong>Church disavows past theories</strong> (pre-mortal behavior, lineage curses, black skin as disfavor). <strong>Church does not know precisely why restriction was instituted.</strong> Restriction was practice/policy, not doctrine. Church acknowledges pain/suffering caused. Affirms all are alike unto God; racism has no place in doctrine.", source: "web"},
+
+            // UNIT 14
+            {unit: 14, q: "What is the conceptual difference between prophets leading the Church astray and making mistakes?", a: "Lord guides His people to do His work and support the church. Yet prophets <strong>do make mistakes</strong> (like losing 116 pages). Prophetic words adjust over time. The Lord determines prophetic mistakes.", source: "notion"},
+            {unit: 14, q: "What have we been promised that the prophets will never lead us astray from?", a: "<strong>The Lord will not allow the church to go astray.</strong> He is leading it and will 'sweep away those who would.' <strong>He will not let the plane crash or arrive at an unintended destination.</strong>", source: "notion"},
+            {unit: 14, q: "What is a 'counterbalance' that ensures the Church will not go astray?", a: "<strong>Unanimity of the Quorum of 12 Apostles + First Presidency.</strong> Many safeguards to ensure not one person can make all decisions and take utmost control.", source: "notion"},
+            {unit: 14, q: "What does it mean that prophets have 'agency' in their calling related to 'the bold doctrine'?", a: "Acting in our authority, we extend calling from us. Lord guides and helps us know what He would have us do. Thus able to <strong>act in His name within our stewardship</strong> and in all righteousness. The power to represent. In His way and unity, prophets can create laws when they act in His way.", source: "notion"},
+            {unit: 14, q: "When will the Restoration be complete?", a: "Article of Faith 9: 'We believe all God has revealed, all He does now reveal, and we believe He will yet reveal many great and important things.' <strong>Restoration is ongoing.</strong> Won't be fully complete until Second Coming. Continuing revelation is fundamental. <strong>Complete when Christ returns and all things restored.</strong>", source: "web"},
+
+            // COMPREHENSIVE SEEKING SKILLS
+            {unit: 'skills', q: "For this class, what is the definition of 'doctrine'?", a: "Doctrine refers to <strong>fundamental, unchanging truths</strong> of the gospel of Jesus Christ. Teachings and principles revealed by God through His prophets. Found primarily in standard works and words of latter-day prophets. Distinguished from policies/practices which may change.", source: "web"},
+            {unit: 'skills', q: "What are the four 'types' of doctrine?", a: "1. <strong>Core/Fundamental Doctrine</strong> - Essential truths for salvation (faith, repentance, baptism, Holy Ghost, enduring)<br>2. <strong>Supporting Doctrine</strong> - Important teachings that support core doctrines<br>3. <strong>Policy Doctrine</strong> - Practices/procedures that may change (administrative)<br>4. <strong>Esoteric/Deeper Doctrine</strong> - Advanced spiritual truths for those prepared", source: "web"},
+            {unit: 'skills', q: "What are the four 'sources' of evaluating an official Latter-day Saint teaching?", a: "1. <strong>Standard Works</strong> - Bible, Book of Mormon, D&C, Pearl of Great Price<br>2. <strong>Words of Living Prophets</strong> - General Conference, official publications<br>3. <strong>Official Church Declarations</strong> - Proclamations, Official Declarations<br>4. <strong>The Holy Ghost</strong> - Personal confirmation through the Spirit", source: "web"},
+            {unit: 'skills', q: "What are five factors for evaluating a historical source?", a: "1. <strong>Proximity</strong> - How close in time to the event? (Primary vs. Secondary)<br>2. <strong>Bias/Perspective</strong> - Author's relationship to event? Their agenda?<br>3. <strong>Corroboration</strong> - Can it be verified by other independent sources?<br>4. <strong>Consistency</strong> - Aligns with other known facts and reliable sources?<br>5. <strong>Credibility of Author</strong> - Their ability/position to know? Track record for accuracy?", source: "web"},
+            {unit: 'skills', q: "What are at least five reliable databases to find high quality content related to Latter-day Saint history and Doctrine?", a: "1. <strong>ChurchofJesusChrist.org</strong> - Official Church website/Gospel Library<br>2. <strong>Joseph Smith Papers Project</strong> (josephsmithpapers.org)<br>3. <strong>BYU Religious Studies Center</strong> (rsc.byu.edu)<br>4. <strong>BYU Studies</strong> (byustudies.byu.edu)<br>5. <strong>Church History Library</strong> - Official archives<br>6. FamilySearch.org<br>7. Scriptures.ChurchofJesusChrist.org", source: "web"},
+            {unit: 'skills', q: "What are the Stewardship test, the Brethren test, and the Covenants/Fruits test pertaining to personal revelation?", a: "<strong>Stewardship Test:</strong> Does revelation pertain to my proper stewardship/responsibility? We receive revelation for areas we have responsibility over, not outside our stewardship.<br><br><strong>Brethren Test:</strong> Does this align with living prophets/apostles? Personal revelation never contradicts prophets. If it does, it's not from God.<br><br><strong>Covenants/Fruits Test:</strong> Does it encourage keeping covenants? Produce good fruits? Bring me closer to Christ? Align with gospel principles?", source: "web"},
+            {unit: 'skills', q: "What is a brief definition of faith, hope, and charity, and what are their three opposites?", a: "<strong>Faith:</strong> Trust in true and living God; principle of action and power. 'Faith says Jesus forgives sins' → Opposite: <strong>Fear</strong><br><br><strong>Hope:</strong> Personal assurance in God's promises; sure, unwavering, active. 'Hope is Jesus will forgive MY sins' → Opposite: <strong>Doubt</strong><br><br><strong>Charity:</strong> Loving relationship with God; receiving divine love to love others; Father's character. Agapē → Opposite: <strong>Pride</strong>", source: "notion"},
+            {unit: 'skills', q: "What is a narrative, and how are they formed (including the difference between facts and interpretations of facts)?", a: "<strong>Narrative:</strong> A story/account that explains events and their meaning. How we organize facts into coherent understanding.<br><br><strong>How Formed:</strong> Start with facts (objective data) + Add interpretation (meaning, motive, significance) = Narrative (story explaining facts)<br><br><strong>Facts vs. Interpretations:</strong><br>• Facts: Objective, verifiable events (e.g., 'Joseph went to grove')<br>• Interpretations: Subjective meaning assigned (e.g., 'Why he went,' 'What it means')<br>• Same facts can support different narratives depending on interpretation", source: "web"},
+            {unit: 'skills', q: "What is the definition of a premise and an assumption, and can you identify them?", a: "<strong>Premise:</strong> A stated foundation upon which an argument is built. Explicitly declared starting point. Example: 'All men are mortal' (stated premise)<br><br><strong>Assumption:</strong> An unstated belief taken for granted. Implicit foundation underlying reasoning but not stated. Often unexamined. Example: When saying 'That's a good choice,' assumption might be goodness = happiness<br><br><strong>Identifying:</strong> Premises are explicitly stated. Assumptions require looking for what's implied. Ask: 'What must be true for this argument to work?'", source: "web"},
+            {unit: 'skills', q: "What is System 1 in thinking fast, and what is System 2 in thinking slow?", a: "<strong>System 1 (Thinking Fast):</strong> Automatic, intuitive, effortless thinking. Quick judgments, gut reactions, pattern recognition. Operates unconsciously. Prone to biases/errors. Examples: Recognizing faces, understanding simple sentences, driving familiar routes.<br><br><strong>System 2 (Thinking Slow):</strong> Deliberate, analytical, effortful thinking. Conscious reasoning, careful analysis. Requires mental energy. More accurate but slower. Examples: Complex math, learning new skills, careful decisions.<br><br>(From Daniel Kahneman's 'Thinking, Fast and Slow')", source: "web"},
+            {unit: 'skills', q: "What are at least three biases (out of ten) to recognize to help you think more slowly?", a: "1. <strong>Confirmation Bias</strong> - Seeking/favoring information confirming existing beliefs, ignoring contradictory evidence<br><br>2. <strong>Anchoring Bias</strong> - Over-relying on first information (the 'anchor'). Subsequent judgments made relative to anchor<br><br>3. <strong>Availability Bias</strong> - Overestimating likelihood of events easily recalled. Recent/dramatic events seem more common than they are<br><br><em>Others: Hindsight bias, attribution bias, sunk cost fallacy, bandwagon effect, Dunning-Kruger effect, recency bias, halo effect</em>", source: "web"}
+        ];
+
+        let currentIndex = 0;
+        let displayedCards = [...flashcards];
+        let isFlipped = false;
+        let currentFilter = 'all';
+
+        // Load tracking data from localStorage
+        let knewCards = new Set(JSON.parse(localStorage.getItem('knewCards') || '[]'));
+        let missedCards = new Set(JSON.parse(localStorage.getItem('missedCards') || '[]'));
+
+        function saveTracking() {
+            localStorage.setItem('knewCards', JSON.stringify([...knewCards]));
+            localStorage.setItem('missedCards', JSON.stringify([...missedCards]));
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('knewCount').textContent = knewCards.size;
+            document.getElementById('missedStatCount').textContent = missedCards.size;
+            document.getElementById('missedCount').textContent = missedCards.size;
+            
+            const reviewed = new Set([...knewCards, ...missedCards]);
+            document.getElementById('reviewedCount').textContent = reviewed.size;
+            document.getElementById('totalCount').textContent = flashcards.length;
+        }
+
+        function getCardId(card) {
+            // Create unique ID based on question
+            return card.q.substring(0, 50);
+        }
+
+        function markAsKnew() {
+            const card = displayedCards[currentIndex];
+            const cardId = getCardId(card);
+            
+            knewCards.add(cardId);
+            missedCards.delete(cardId); // Remove from missed if it was there
+            saveTracking();
+            
+            // Auto-advance to next card
+            if (currentIndex < displayedCards.length - 1) {
+                nextCard();
+            }
+        }
+
+        function markAsMissed() {
+            const card = displayedCards[currentIndex];
+            const cardId = getCardId(card);
+            
+            missedCards.add(cardId);
+            knewCards.delete(cardId); // Remove from knew if it was there
+            saveTracking();
+            
+            // Auto-advance to next card
+            if (currentIndex < displayedCards.length - 1) {
+                nextCard();
+            }
+        }
+
+        function clearMissed() {
+            if (missedCards.size === 0) {
+                alert('No missed cards to clear!');
+                return;
+            }
+            
+            if (confirm(`Clear all ${missedCards.size} missed cards? This will reset your missed pile.`)) {
+                missedCards.clear();
+                saveTracking();
+                
+                // If currently viewing missed cards, switch back to all
+                if (currentFilter === 'missed') {
+                    filterByUnit('all');
+                }
+            }
+        }
+
+        function updateCard() {
+            const card = displayedCards[currentIndex];
+            const flashcardEl = document.getElementById('flashcard');
+            
+            // Reset flip
+            flashcardEl.classList.remove('flipped');
+            isFlipped = false;
+            
+            // Update content
+            document.getElementById('question').innerHTML = card.q;
+            document.getElementById('answer').innerHTML = card.a;
+            
+            // Update card numbers
+            const cardNum = `${currentIndex + 1}/${displayedCards.length}`;
+            document.getElementById('cardNumber').textContent = cardNum;
+            document.getElementById('cardNumberBack').textContent = cardNum;
+            
+            // Update source badges
+            const sourceText = card.source === 'notion' ? '✓ Notion' : '🌐 Web';
+            const sourceClass = card.source === 'notion' ? 'source-notion' : 'source-web';
+            
+            document.getElementById('sourceBadge').textContent = sourceText;
+            document.getElementById('sourceBadge').className = `source-badge ${sourceClass}`;
+            document.getElementById('sourceBadgeBack').textContent = sourceText;
+            document.getElementById('sourceBadgeBack').className = `source-badge ${sourceClass}`;
+            
+            // Update progress
+            document.getElementById('progress').textContent = `Card ${currentIndex + 1} of ${displayedCards.length}`;
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === displayedCards.length - 1;
+        }
+
+        function flipCard() {
+            const flashcardEl = document.getElementById('flashcard');
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                flashcardEl.classList.add('flipped');
+            } else {
+                flashcardEl.classList.remove('flipped');
+            }
+        }
+
+        function nextCard() {
+            if (currentIndex < displayedCards.length - 1) {
+                currentIndex++;
+                updateCard();
+            }
+        }
+
+        function previousCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        function filterByUnit(unit) {
+            currentFilter = unit;
+            
+            // Update active button
+            document.querySelectorAll('.unit-selector').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filter cards
+            if (unit === 'all') {
+                displayedCards = [...flashcards];
+            } else if (unit === 'missed') {
+                if (missedCards.size === 0) {
+                    alert('No missed cards yet! Mark cards you miss to review them later.');
+                    // Revert to previous filter
+                    const allBtn = document.querySelector('.unit-selector:first-child');
+                    allBtn.classList.add('active');
+                    event.target.classList.remove('active');
+                    return;
+                }
+                displayedCards = flashcards.filter(card => missedCards.has(getCardId(card)));
+            } else {
+                displayedCards = flashcards.filter(card => card.unit === unit);
+            }
+            
+            currentIndex = 0;
+            updateCard();
+        }
+
+        function shuffleCards() {
+            displayedCards = [...displayedCards].sort(() => Math.random() - 0.5);
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') previousCard();
+            if (e.key === 'ArrowRight') nextCard();
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                flipCard();
+            }
+            // Quick shortcuts
+            if (e.key === 'k' || e.key === 'K') markAsKnew();
+            if (e.key === 'm' || e.key === 'M') markAsMissed();
+        });
+
+        // Initialize
+        updateCard();
+        updateStats();
+    </script>
+</body>
+</html>
